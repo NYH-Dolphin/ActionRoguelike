@@ -26,6 +26,9 @@ ASCharacter::ASCharacter()
 
 	// Sprint setting
 	FSprintScale = 1.3f;
+
+	FAttackPeriod = 0.5f;
+	bCanAttack = true;
 }
 
 // Called when the game starts or when spawned
@@ -63,10 +66,18 @@ void ASCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponen
 	PlayerInputComponent->BindAction("PrimaryInteract", IE_Pressed, this, &ASCharacter::Interact);
 }
 
+void ASCharacter::RefreshAttack()
+{
+	bCanAttack = true;
+}
+
+// TODO this function will be modified later
 void ASCharacter::PrimaryAttack()
 {
-	// TODO this function will be modified later
-	
+	// check whether the player can attack
+	if (!bCanAttack) return;
+	bCanAttack = false;
+
 	// play the attack animation
 	PlayAnimMontage(AttackAnim);
 
@@ -75,10 +86,12 @@ void ASCharacter::PrimaryAttack()
 	ControlRotation.Pitch = 0.0f;
 	ControlRotation.Roll = 0.0f;
 	SetActorRotation(ControlRotation);
-	
-	// delay a certain period of time to execute the spawn projectile
-	// call spawn projectile in 2 sec
+
 	GetWorldTimerManager().SetTimer(TimerHandle_PrimaryAttack, this, &ASCharacter::SpawnProjectile, 0.2f);
+
+	// delay a certain period of time to execute the spawn projectile
+	// call spawn projectile in 0.2 sec
+	GetWorldTimerManager().SetTimer(TimerHandle_AttackPeriod, this, &ASCharacter::RefreshAttack, FAttackPeriod);
 }
 
 void ASCharacter::SpawnProjectile()

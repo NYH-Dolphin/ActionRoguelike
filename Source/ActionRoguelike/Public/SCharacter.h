@@ -31,16 +31,25 @@ protected: // Sub-Component
 protected: // Attack Related
 
 	UPROPERTY(EditAnywhere, Category="Attack")
+	float FAttackPeriod;
+	
+	UPROPERTY(EditAnywhere, Category="Attack")
 	UAnimMontage* AttackAnim;
 
 	UPROPERTY(EditAnywhere, Category="Attack")
 	TSubclassOf<AActor> ProjectileClass; // assign it in blueprint
-
-	FTimerHandle TimerHandle_PrimaryAttack;
-	// Character Attack
+	
 	void PrimaryAttack();
 
 	void SpawnProjectile();
+
+	void RefreshAttack();
+	
+private:
+	FTimerHandle TimerHandle_PrimaryAttack;
+	FTimerHandle TimerHandle_AttackPeriod;
+	
+	bool bCanAttack;
 
 protected: // Movement Related
 	UPROPERTY(EditAnywhere)
