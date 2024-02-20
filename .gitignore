@@ -1,7 +1,7 @@
 # Visual Studio 2015 user specific files
 .vs/
 .idea/
-./Content/ParagonGideon/*
+./Content/ParagonGideon/
 
 # Compiled Object files
 *.slo
