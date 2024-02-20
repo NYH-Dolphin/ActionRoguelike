@@ -4,6 +4,7 @@
 #include "SMessageComponent.h"
 #include "SMessageInterface.h"
 #include "Camera/CameraComponent.h"
+#include "DrawDebugHelpers.h"
 
 // Sets default values for this component's properties
 USMessageComponent::USMessageComponent()
@@ -40,18 +41,24 @@ void USMessageComponent::SendMessage()
 
 	// get the line trace from the camera component
 	UCameraComponent* CameraComponent = Owner->FindComponentByClass<UCameraComponent>();
-	if(!CameraComponent) return;
+	if (!CameraComponent) return;
 	FVector Start = CameraComponent->GetComponentLocation();
 	FVector End = Start + CameraComponent->GetComponentRotation().Vector() * 1000.0f;
 
-	// set the check collision channel
+	// set the check collision channel: world dynamic
 	FCollisionObjectQueryParams ObjectQueryParams;
 	ObjectQueryParams.AddObjectTypesToQuery(ECC_WorldDynamic);
 
+	// set the collision detect shape to be a sphere
+	FCollisionShape Shape;
+	float Radius = 30.0f;
+	Shape.SetSphere(Radius);
+
 	// hit result will be filled in many information
 	FHitResult Hit;
-	GetWorld()->LineTraceSingleByObjectType(Hit, Start, End, ObjectQueryParams);
+	GetWorld()->SweepSingleByObjectType(Hit, Start, End, FQuat::Identity, ObjectQueryParams, Shape);
 
+	// check whether the line collide with the actor
 	AActor* HitActor = Hit.GetActor();
 	if (HitActor)
 	{
@@ -61,5 +68,13 @@ void USMessageComponent::SendMessage()
 			APawn* MyPawn = Cast<APawn>(Owner); // cast to the pawn
 			ISMessageInterface::Execute_RecvMessage(HitActor, MyPawn); // use reflection to send the message
 		}
+
+		// for debug
+		DrawDebugSphere(GetWorld(), Hit.ImpactPoint, Radius, 32, FColor::Green, false, 2.0f);
+		DrawDebugLine(GetWorld(), Start, End, FColor::Green, false, 2.0f, 0, 2.0f);
+	}
+	else
+	{
+		DrawDebugLine(GetWorld(), Start, End, FColor::Red, false, 2.0f, 0, 2.0f);
 	}
 }

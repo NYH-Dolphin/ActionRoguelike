@@ -65,6 +65,24 @@ void ASCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponen
 
 void ASCharacter::PrimaryAttack()
 {
+	// TODO this function will be modified later
+	
+	// play the attack animation
+	PlayAnimMontage(AttackAnim);
+
+	// set the rotation of the character to be the same as the control rotation
+	FRotator ControlRotation = GetControlRotation();
+	ControlRotation.Pitch = 0.0f;
+	ControlRotation.Roll = 0.0f;
+	SetActorRotation(ControlRotation);
+	
+	// delay a certain period of time to execute the spawn projectile
+	// call spawn projectile in 2 sec
+	GetWorldTimerManager().SetTimer(TimerHandle_PrimaryAttack, this, &ASCharacter::SpawnProjectile, 0.2f);
+}
+
+void ASCharacter::SpawnProjectile()
+{
 	// spawn transform matrix
 	FVector HandLocation = GetMesh()->GetSocketLocation("Muzzle_01");
 	FRotator ControlRotation = GetControlRotation();
@@ -79,6 +97,7 @@ void ASCharacter::PrimaryAttack()
 	// spawn
 	GetWorld()->SpawnActor<AActor>(ProjectileClass, SpawnTM, SpawnParams);
 }
+
 
 void ASCharacter::MoveForward(float Value)
 {
@@ -115,6 +134,7 @@ void ASCharacter::SprintCanceled()
 {
 	GetCharacterMovement()->MaxWalkSpeed /= FSprintScale;
 }
+
 
 void ASCharacter::Interact()
 {

@@ -14,15 +14,11 @@ class ACTIONROGUELIKE_API ASCharacter : public ACharacter
 {
 	GENERATED_BODY()
 
-protected:
-	UPROPERTY(EditAnywhere)
-	TSubclassOf<AActor> ProjectileClass; // assign it in blueprint
-	
-public:
+public: // Constructor
 	// Sets default values for this character's properties
 	ASCharacter();
 
-protected:
+protected: // Sub-Component
 	UPROPERTY(VisibleAnywhere)
 	USpringArmComponent* SpringArmComponent;
 
@@ -32,14 +28,24 @@ protected:
 	UPROPERTY(VisibleAnywhere)
 	USMessageComponent* MessageComponent;
 
-protected:
+protected: // Attack Related
+
+	UPROPERTY(EditAnywhere, Category="Attack")
+	UAnimMontage* AttackAnim;
+
+	UPROPERTY(EditAnywhere, Category="Attack")
+	TSubclassOf<AActor> ProjectileClass; // assign it in blueprint
+
+	FTimerHandle TimerHandle_PrimaryAttack;
 	// Character Attack
 	void PrimaryAttack();
 
-protected:
+	void SpawnProjectile();
+
+protected: // Movement Related
 	UPROPERTY(EditAnywhere)
 	float FSprintScale;
-	
+
 	// Character Movement Definition
 	void MoveForward(float Value);
 
@@ -55,6 +61,7 @@ protected:
 
 	void Interact();
 
+protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
 
