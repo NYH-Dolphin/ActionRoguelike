@@ -2,7 +2,8 @@
 
 
 #include "SMessageComponent.h"
-#include "SGameMessageInterface.h"
+#include "SMessageInterface.h"
+#include "Camera/CameraComponent.h"
 
 // Sets default values for this component's properties
 USMessageComponent::USMessageComponent()
@@ -37,12 +38,11 @@ void USMessageComponent::SendMessage()
 {
 	AActor* Owner = GetOwner();
 
-	// get the line trace
-	FVector EyeLocation;
-	FRotator EyeRotation;
-	Owner->GetActorEyesViewPoint(EyeLocation, EyeRotation);
-	FVector Start = EyeLocation;
-	FVector End = EyeLocation + EyeRotation.Vector() * 1000.0f;
+	// get the line trace from the camera component
+	UCameraComponent* CameraComponent = Owner->FindComponentByClass<UCameraComponent>();
+	if(!CameraComponent) return;
+	FVector Start = CameraComponent->GetComponentLocation();
+	FVector End = Start + CameraComponent->GetComponentRotation().Vector() * 1000.0f;
 
 	// set the check collision channel
 	FCollisionObjectQueryParams ObjectQueryParams;
@@ -56,10 +56,10 @@ void USMessageComponent::SendMessage()
 	if (HitActor)
 	{
 		// check whether the actor has implemented the interface we want
-		if (HitActor->Implements<USGameMessageInterface>())
+		if (HitActor->Implements<USMessageInterface>())
 		{
 			APawn* MyPawn = Cast<APawn>(Owner); // cast to the pawn
-			ISGameMessageInterface::Execute_RecvMessage(HitActor, MyPawn); // use reflection to send the message
+			ISMessageInterface::Execute_RecvMessage(HitActor, MyPawn); // use reflection to send the message
 		}
 	}
 }

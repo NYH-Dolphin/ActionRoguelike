@@ -34,5 +34,5 @@ void ASItemChest::Tick(float DeltaTime)
 
 void ASItemChest::RecvMessage_Implementation(APawn* Sender)
 {
-	ISGameMessageInterface::RecvMessage_Implementation(Sender);
+	ISMessageInterface::RecvMessage_Implementation(Sender);
 }

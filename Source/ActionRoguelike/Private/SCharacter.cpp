@@ -17,6 +17,8 @@ ASCharacter::ASCharacter()
 	CameraComponent = CreateDefaultSubobject<UCameraComponent>("CameraComponent");
 	CameraComponent->SetupAttachment(SpringArmComponent); // attached the camera to the springarm
 
+	MessageComponent = CreateDefaultSubobject<USMessageComponent>("MessageComponent");
+
 	// Movement details setting
 	SpringArmComponent->bUsePawnControlRotation = true;
 	GetCharacterMovement()->bOrientRotationToMovement = true;
@@ -57,6 +59,8 @@ void ASCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponen
 	PlayerInputComponent->BindAction("Sprint", IE_Released, this, &ASCharacter::SprintCanceled);
 
 	PlayerInputComponent->BindAction("PrimaryAttack", IE_Pressed, this, &ASCharacter::PrimaryAttack);
+
+	PlayerInputComponent->BindAction("PrimaryInteract", IE_Pressed, this, &ASCharacter::Interact);
 }
 
 void ASCharacter::PrimaryAttack()
@@ -76,7 +80,6 @@ void ASCharacter::PrimaryAttack()
 	GetWorld()->SpawnActor<AActor>(ProjectileClass, SpawnTM, SpawnParams);
 }
 
-// Character Movement Implementation
 void ASCharacter::MoveForward(float Value)
 {
 	FRotator ControlRotation = GetControlRotation();
@@ -111,4 +114,12 @@ void ASCharacter::SprintPerformed()
 void ASCharacter::SprintCanceled()
 {
 	GetCharacterMovement()->MaxWalkSpeed /= FSprintScale;
+}
+
+void ASCharacter::Interact()
+{
+	if (MessageComponent)
+	{
+		MessageComponent->SendMessage();
+	}
 }

@@ -3,12 +3,12 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "SGameMessageInterface.h"
+#include "SMessageInterface.h"
 #include "GameFramework/Actor.h"
 #include "SItemChest.generated.h"
 
 UCLASS()
-class ACTIONROGUELIKE_API ASItemChest : public AActor, public ISGameMessageInterface
+class ACTIONROGUELIKE_API ASItemChest : public AActor, public ISMessageInterface
 {
 	GENERATED_BODY()
 

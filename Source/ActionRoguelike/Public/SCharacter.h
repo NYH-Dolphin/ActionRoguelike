@@ -3,6 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "SMessageComponent.h"
 #include "Camera/CameraComponent.h"
 #include "GameFramework/Character.h"
 #include "GameFramework/SpringArmComponent.h"
@@ -28,6 +29,9 @@ protected:
 	UPROPERTY(VisibleAnywhere)
 	UCameraComponent* CameraComponent;
 
+	UPROPERTY(VisibleAnywhere)
+	USMessageComponent* MessageComponent;
+
 protected:
 	// Character Attack
 	void PrimaryAttack();
@@ -48,6 +52,8 @@ protected:
 	void SprintPerformed();
 
 	void SprintCanceled();
+
+	void Interact();
 
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
