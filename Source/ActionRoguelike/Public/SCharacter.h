@@ -3,12 +3,10 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "Camera/CameraComponent.h"
 #include "GameFramework/Character.h"
+#include "GameFramework/SpringArmComponent.h"
 #include "SCharacter.generated.h"
-
-class UCameraComponent;
-class USpringArmComponent;
-
 
 UCLASS()
 class ACTIONROGUELIKE_API ASCharacter : public ACharacter
@@ -16,36 +14,48 @@ class ACTIONROGUELIKE_API ASCharacter : public ACharacter
 	GENERATED_BODY()
 
 protected:
-
 	UPROPERTY(EditAnywhere)
-	TSubclassOf<AActor> ProjectileClass;
-
+	TSubclassOf<AActor> ProjectileClass; // assign it in blueprint
+	
 public:
 	// Sets default values for this character's properties
 	ASCharacter();
 
 protected:
+	UPROPERTY(VisibleAnywhere)
+	USpringArmComponent* SpringArmComponent;
 
 	UPROPERTY(VisibleAnywhere)
-	USpringArmComponent* SpringArmComp;
+	UCameraComponent* CameraComponent;
 
-	UPROPERTY(VisibleAnywhere)
-	UCameraComponent* CameraComp;
+protected:
+	// Character Attack
+	void PrimaryAttack();
 
-	// Called when the game starts or when spawned
-	virtual void BeginPlay() override;
-
+protected:
+	UPROPERTY(EditAnywhere)
+	float FSprintScale;
+	
+	// Character Movement Definition
 	void MoveForward(float Value);
 
 	void MoveRight(float Value);
 
-	void PrimaryAttack();
+	void JumpPerformed();
 
-public:	
+	void JumpCanceled();
+
+	void SprintPerformed();
+
+	void SprintCanceled();
+
+	// Called when the game starts or when spawned
+	virtual void BeginPlay() override;
+
+public:
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
 
 	// Called to bind functionality to input
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
-
 };
