@@ -73,6 +73,7 @@ void ASCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponen
 	PlayerInputComponent->BindAction("Sprint", IE_Released, this, &ASCharacter::SprintCanceled);
 
 	PlayerInputComponent->BindAction("PrimaryAttack", IE_Pressed, this, &ASCharacter::PrimaryAttack);
+	PlayerInputComponent->BindAction("SkillAttack", IE_Pressed, this, &ASCharacter::SkillAttack);
 
 	PlayerInputComponent->BindAction("PrimaryInteract", IE_Pressed, this, &ASCharacter::Interact);
 }
@@ -98,28 +99,72 @@ void ASCharacter::PrimaryAttack()
 	ControlRotation.Roll = 0.0f;
 	SetActorRotation(ControlRotation);
 
-	GetWorldTimerManager().SetTimer(TimerHandle_PrimaryAttack, this, &ASCharacter::SpawnProjectile, 0.2f);
+	GetWorldTimerManager().SetTimer(TimerHandle_PrimaryAttack, this, &ASCharacter::SpawnMagicProjectile, 0.2f);
 
 	// delay a certain period of time to execute the spawn projectile
 	// call spawn projectile in 0.2 sec
 	GetWorldTimerManager().SetTimer(TimerHandle_AttackPeriod, this, &ASCharacter::RefreshAttack, FAttackPeriod);
 }
 
-void ASCharacter::SpawnProjectile()
+void ASCharacter::SkillAttack()
 {
-	// spawn transform matrix
-	FVector HandLocation = GetMesh()->GetSocketLocation("Muzzle_01");
-	FRotator ControlRotation = GetControlRotation();
-	ControlRotation.Pitch = 0.0f; // move horizontally
-	ControlRotation.Roll = 0.0f;
-	FTransform SpawnTM = FTransform(ControlRotation, HandLocation);
+	// check whether the player can attack
+	if (!bCanAttack) return;
+	bCanAttack = false;
 
+	// play the attack animation
+	PlayAnimMontage(AttackAnim);
+
+	// set the rotation of the character to be the same as the control rotation
+	FRotator ControlRotation = GetControlRotation();
+	ControlRotation.Pitch = 0.0f;
+	ControlRotation.Roll = 0.0f;
+	SetActorRotation(ControlRotation);
+
+	GetWorldTimerManager().SetTimer(TimerHandle_PrimaryAttack, this, &ASCharacter::SpawnBlackHoleProjectile, 0.2f);
+
+	// delay a certain period of time to execute the spawn projectile
+	// call spawn projectile in 0.2 sec
+	GetWorldTimerManager().SetTimer(TimerHandle_AttackPeriod, this, &ASCharacter::RefreshAttack, FAttackPeriod);
+}
+
+void ASCharacter::SpawnMagicProjectile()
+{
+	SpawnProjectile(MagicProjectileClass);
+}
+
+void ASCharacter::SpawnBlackHoleProjectile()
+{
+	SpawnProjectile(BlackHoleProjectileClass);
+}
+
+void ASCharacter::SpawnProjectile(UClass* Class)
+{
+	// get the line trace from the camera, really long, to detect the possible 
+	float Length = 100000.0f;
+	FVector Start = CameraComponent->GetComponentLocation();
+	FVector End = Start + CameraComponent->GetComponentRotation().Vector() * Length;
+	FCollisionObjectQueryParams ObjectQueryParams;
+	ObjectQueryParams.AddObjectTypesToQuery(ECC_WorldDynamic);
+	ObjectQueryParams.AddObjectTypesToQuery(ECC_WorldStatic);
+	// hit result will be filled in many information
+	FHitResult Hit;
+	GetWorld()->LineTraceSingleByObjectType(Hit, Start, End, ObjectQueryParams);
+	// check whether the line trace hit with an actor, if true, get the hit location, else directly using the line trace
+	AActor* HitActor = Hit.GetActor();
+	FVector HitLocation = HitActor ? Hit.Location : End;
+
+
+	// spawn position and hit rotation, to construct the rotation matrix
+	FVector HandLocation = GetMesh()->GetSocketLocation("Muzzle_01");
+	FRotator HitRotation = FRotationMatrix::MakeFromX((HitLocation - HandLocation).GetSafeNormal()).Rotator();;
+	FTransform SpawnTM = FTransform(HitRotation, HandLocation);
 	// specify the spawn rules
 	FActorSpawnParameters SpawnParams;
 	SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
 	SpawnParams.Instigator = this;
 	// spawn
-	GetWorld()->SpawnActor<AActor>(ProjectileClass, SpawnTM, SpawnParams);
+	GetWorld()->SpawnActor<AActor>(Class, SpawnTM, SpawnParams);
 }
 
 
@@ -158,7 +203,6 @@ void ASCharacter::SprintCanceled()
 {
 	GetCharacterMovement()->MaxWalkSpeed /= FSprintScale;
 }
-
 
 void ASCharacter::Interact()
 {
