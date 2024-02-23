@@ -39,11 +39,11 @@ void USMessageComponent::SendMessage()
 {
 	AActor* Owner = GetOwner();
 
-	// get the line trace from the camera component
+	// get the line trace
 	UCameraComponent* CameraComponent = Owner->FindComponentByClass<UCameraComponent>();
 	if (!CameraComponent) return;
-	FVector Start = CameraComponent->GetComponentLocation();
-	FVector End = Start + CameraComponent->GetComponentRotation().Vector() * 1000.0f;
+	FVector Start = Owner->GetActorLocation();
+	FVector End = Start + CameraComponent->GetComponentRotation().Vector() * 500.0f;
 
 	// set the check collision channel: world dynamic
 	FCollisionObjectQueryParams ObjectQueryParams;
@@ -51,7 +51,7 @@ void USMessageComponent::SendMessage()
 
 	// set the collision detect shape to be a sphere
 	FCollisionShape Shape;
-	float Radius = 30.0f;
+	float Radius = 100.0f;
 	Shape.SetSphere(Radius);
 
 	// hit result will be filled in many information

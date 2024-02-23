@@ -2,6 +2,8 @@
 
 
 #include "SCharacter.h"
+
+#include "DrawDebugHelpers.h"
 #include "GameFramework/CharacterMovementComponent.h"
 
 // Sets default values
@@ -41,6 +43,15 @@ void ASCharacter::BeginPlay()
 void ASCharacter::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
+
+	// Debug for direction
+	float ArrowLength = 60.0f;
+	float Offset = 200.0f;
+	FVector Start = GetActorLocation() + GetActorRightVector() * Offset;
+	FVector EndActor = Start + ArrowLength * GetActorRotation().Vector();
+	FVector EndController = Start + ArrowLength * GetControlRotation().Vector();
+	DrawDebugDirectionalArrow(GetWorld(), Start, EndActor, 10.0f, FColor::Yellow, false, -1, 0, 3.0f);
+	DrawDebugDirectionalArrow(GetWorld(), Start, EndController, 10.0f, FColor::Green, false, -1, 1, 3.0f);
 }
 
 
