@@ -42,10 +42,14 @@ protected: // Attack Related
 	UPROPERTY(EditAnywhere, Category="Attack")
 	TSubclassOf<AActor> BlackHoleProjectileClass; // assign it in blueprint
 
+	UPROPERTY(EditAnywhere, Category="Attack")
+	TSubclassOf<AActor> TeleportProjectileClass;
 	void PrimaryAttack();
 	void SkillAttack();
+	void Teleport();
 	void SpawnMagicProjectile();
 	void SpawnBlackHoleProjectile();
+	void SpawnTeleportProjectile();
 	void SpawnProjectile(UClass* Class);
 
 	void RefreshAttack();

@@ -74,6 +74,7 @@ void ASCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponen
 
 	PlayerInputComponent->BindAction("PrimaryAttack", IE_Pressed, this, &ASCharacter::PrimaryAttack);
 	PlayerInputComponent->BindAction("SkillAttack", IE_Pressed, this, &ASCharacter::SkillAttack);
+	PlayerInputComponent->BindAction("Teleport", IE_Pressed, this, &ASCharacter::Teleport);
 
 	PlayerInputComponent->BindAction("PrimaryInteract", IE_Pressed, this, &ASCharacter::Interact);
 }
@@ -83,7 +84,6 @@ void ASCharacter::RefreshAttack()
 	bCanAttack = true;
 }
 
-// TODO this function will be modified later
 void ASCharacter::PrimaryAttack()
 {
 	// check whether the player can attack
@@ -99,10 +99,9 @@ void ASCharacter::PrimaryAttack()
 	ControlRotation.Roll = 0.0f;
 	SetActorRotation(ControlRotation);
 
-	GetWorldTimerManager().SetTimer(TimerHandle_PrimaryAttack, this, &ASCharacter::SpawnMagicProjectile, 0.2f);
-
 	// delay a certain period of time to execute the spawn projectile
 	// call spawn projectile in 0.2 sec
+	GetWorldTimerManager().SetTimer(TimerHandle_PrimaryAttack, this, &ASCharacter::SpawnMagicProjectile, 0.2f);
 	GetWorldTimerManager().SetTimer(TimerHandle_AttackPeriod, this, &ASCharacter::RefreshAttack, FAttackPeriod);
 }
 
@@ -121,10 +120,28 @@ void ASCharacter::SkillAttack()
 	ControlRotation.Roll = 0.0f;
 	SetActorRotation(ControlRotation);
 
-	GetWorldTimerManager().SetTimer(TimerHandle_PrimaryAttack, this, &ASCharacter::SpawnBlackHoleProjectile, 0.2f);
-
 	// delay a certain period of time to execute the spawn projectile
-	// call spawn projectile in 0.2 sec
+	// call spawn projectile in 0.25 sec
+	GetWorldTimerManager().SetTimer(TimerHandle_PrimaryAttack, this, &ASCharacter::SpawnBlackHoleProjectile, 0.25f);
+	GetWorldTimerManager().SetTimer(TimerHandle_AttackPeriod, this, &ASCharacter::RefreshAttack, FAttackPeriod);
+}
+
+void ASCharacter::Teleport()
+{
+	// check whether the player can attack
+	if (!bCanAttack) return;
+	bCanAttack = false;
+
+	// play the attack animation
+	PlayAnimMontage(AttackAnim);
+
+	// set the rotation of the character to be the same as the control rotation
+	FRotator ControlRotation = GetControlRotation();
+	ControlRotation.Pitch = 0.0f;
+	ControlRotation.Roll = 0.0f;
+	SetActorRotation(ControlRotation);
+
+	GetWorldTimerManager().SetTimer(TimerHandle_PrimaryAttack, this, &ASCharacter::SpawnTeleportProjectile, 0.2f);
 	GetWorldTimerManager().SetTimer(TimerHandle_AttackPeriod, this, &ASCharacter::RefreshAttack, FAttackPeriod);
 }
 
@@ -137,6 +154,12 @@ void ASCharacter::SpawnBlackHoleProjectile()
 {
 	SpawnProjectile(BlackHoleProjectileClass);
 }
+
+void ASCharacter::SpawnTeleportProjectile()
+{
+	SpawnProjectile(TeleportProjectileClass);
+}
+
 
 void ASCharacter::SpawnProjectile(UClass* Class)
 {
@@ -153,12 +176,13 @@ void ASCharacter::SpawnProjectile(UClass* Class)
 	// check whether the line trace hit with an actor, if true, get the hit location, else directly using the line trace
 	AActor* HitActor = Hit.GetActor();
 	FVector HitLocation = HitActor ? Hit.Location : End;
-
-
-	// spawn position and hit rotation, to construct the rotation matrix
 	FVector HandLocation = GetMesh()->GetSocketLocation("Muzzle_01");
-	FRotator HitRotation = FRotationMatrix::MakeFromX((HitLocation - HandLocation).GetSafeNormal()).Rotator();;
-	FTransform SpawnTM = FTransform(HitRotation, HandLocation);
+
+	// spawn position and rotation, to construct the rotation matrix
+	// spawn forward a little
+	FVector SpawnLocation = HandLocation + FQuat(GetMesh()->GetSocketRotation("Muzzle_01")).GetForwardVector() * 20.0f;
+	FRotator SpawnRotation = FRotationMatrix::MakeFromX((HitLocation - HandLocation).GetSafeNormal()).Rotator();
+	FTransform SpawnTM = FTransform(SpawnRotation, SpawnLocation);
 	// specify the spawn rules
 	FActorSpawnParameters SpawnParams;
 	SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
