@@ -4,11 +4,10 @@
 #include "SItemChest.h"
 
 
-
 // Sets default values
 ASItemChest::ASItemChest()
 {
- 	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
+	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
 
 	BaseMeshComponent = CreateDefaultSubobject<UStaticMeshComponent>("BaseMeshComponent");
@@ -21,18 +20,16 @@ ASItemChest::ASItemChest()
 void ASItemChest::BeginPlay()
 {
 	Super::BeginPlay();
-	
 }
 
 // Called every frame
 void ASItemChest::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
-
 }
 
 
-void ASItemChest::RecvMessage_Implementation(APawn* Sender)
+void ASItemChest::RecvMessage_Implementation(AActor* Sender)
 {
 	ISMessageInterface::RecvMessage_Implementation(Sender);
 }

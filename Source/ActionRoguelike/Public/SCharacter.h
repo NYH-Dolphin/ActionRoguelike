@@ -5,15 +5,18 @@
 #include "CoreMinimal.h"
 #include "SAttributeComponent.h"
 #include "SMessageComponent.h"
+#include "SMessageInterface.h"
 #include "Camera/CameraComponent.h"
 #include "GameFramework/Character.h"
 #include "GameFramework/SpringArmComponent.h"
 #include "SCharacter.generated.h"
 
 UCLASS()
-class ACTIONROGUELIKE_API ASCharacter : public ACharacter
+class ACTIONROGUELIKE_API ASCharacter : public ACharacter, public ISMessageInterface
 {
 	GENERATED_BODY()
+
+	void RecvMessage_Implementation(AActor* Sender);
 
 public: // Constructor
 	// Sets default values for this character's properties

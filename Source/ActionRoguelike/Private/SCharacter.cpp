@@ -21,7 +21,7 @@ ASCharacter::ASCharacter()
 	MessageComponent = CreateDefaultSubobject<USMessageComponent>("MessageComponent");
 
 	AttributeComponent = CreateDefaultSubobject<USAttributeComponent>("Attribute Component");
-	
+
 	// Movement details setting
 	SpringArmComponent->bUsePawnControlRotation = true;
 	GetCharacterMovement()->bOrientRotationToMovement = true;
@@ -33,7 +33,6 @@ ASCharacter::ASCharacter()
 	// Attack setting
 	FAttackPeriod = 0.5f;
 	bCanAttack = true;
-	
 }
 
 // Called when the game starts or when spawned
@@ -239,5 +238,19 @@ void ASCharacter::Interact()
 	if (MessageComponent)
 	{
 		MessageComponent->SendMessage();
+	}
+}
+
+
+void ASCharacter::RecvMessage_Implementation(AActor* Sender)
+{
+	if (Sender)
+	{
+		if (Sender->GetName().Contains("BP_Defence_Projectile"))
+		{
+			AttributeComponent->ChangeHealth(-10);
+		}
+
+		ISMessageInterface::RecvMessage_Implementation(Sender);
 	}
 }

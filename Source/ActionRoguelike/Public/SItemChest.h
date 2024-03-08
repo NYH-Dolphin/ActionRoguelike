@@ -12,7 +12,7 @@ class ACTIONROGUELIKE_API ASItemChest : public AActor, public ISMessageInterface
 {
 	GENERATED_BODY()
 
-	void RecvMessage_Implementation(APawn* Sender); 
+	void RecvMessage_Implementation(AActor* Sender); 
 	
 public:	
 	// Sets default values for this actor's properties

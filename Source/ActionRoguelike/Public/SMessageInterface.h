@@ -23,5 +23,5 @@ class ACTIONROGUELIKE_API ISMessageInterface
 	// Add interface functions to this class. This is the class that will be inherited to implement this interface.
 public:
 	UFUNCTION(BlueprintCallable, BlueprintNativeEvent)
-	void RecvMessage(APawn* Sender);
+	void RecvMessage(AActor* Sender);
 };
