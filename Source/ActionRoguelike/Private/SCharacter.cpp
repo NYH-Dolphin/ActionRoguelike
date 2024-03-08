@@ -2,7 +2,6 @@
 
 
 #include "SCharacter.h"
-
 #include "DrawDebugHelpers.h"
 #include "GameFramework/CharacterMovementComponent.h"
 
@@ -21,6 +20,8 @@ ASCharacter::ASCharacter()
 
 	MessageComponent = CreateDefaultSubobject<USMessageComponent>("MessageComponent");
 
+	AttributeComponent = CreateDefaultSubobject<USAttributeComponent>("Attribute Component");
+	
 	// Movement details setting
 	SpringArmComponent->bUsePawnControlRotation = true;
 	GetCharacterMovement()->bOrientRotationToMovement = true;
@@ -29,8 +30,10 @@ ASCharacter::ASCharacter()
 	// Sprint setting
 	FSprintScale = 1.3f;
 
+	// Attack setting
 	FAttackPeriod = 0.5f;
 	bCanAttack = true;
+	
 }
 
 // Called when the game starts or when spawned
@@ -101,7 +104,7 @@ void ASCharacter::PrimaryAttack()
 
 	// delay a certain period of time to execute the spawn projectile
 	// call spawn projectile in 0.2 sec
-	GetWorldTimerManager().SetTimer(TimerHandle_PrimaryAttack, this, &ASCharacter::SpawnMagicProjectile, 0.2f);
+	GetWorldTimerManager().SetTimer(TimerHandle_TriggerAttack, this, &ASCharacter::SpawnMagicProjectile, 0.2f);
 	GetWorldTimerManager().SetTimer(TimerHandle_AttackPeriod, this, &ASCharacter::RefreshAttack, FAttackPeriod);
 }
 
@@ -122,7 +125,7 @@ void ASCharacter::SkillAttack()
 
 	// delay a certain period of time to execute the spawn projectile
 	// call spawn projectile in 0.25 sec
-	GetWorldTimerManager().SetTimer(TimerHandle_PrimaryAttack, this, &ASCharacter::SpawnBlackHoleProjectile, 0.25f);
+	GetWorldTimerManager().SetTimer(TimerHandle_TriggerAttack, this, &ASCharacter::SpawnBlackHoleProjectile, 0.25f);
 	GetWorldTimerManager().SetTimer(TimerHandle_AttackPeriod, this, &ASCharacter::RefreshAttack, FAttackPeriod);
 }
 
@@ -141,7 +144,7 @@ void ASCharacter::Teleport()
 	ControlRotation.Roll = 0.0f;
 	SetActorRotation(ControlRotation);
 
-	GetWorldTimerManager().SetTimer(TimerHandle_PrimaryAttack, this, &ASCharacter::SpawnTeleportProjectile, 0.2f);
+	GetWorldTimerManager().SetTimer(TimerHandle_TriggerAttack, this, &ASCharacter::SpawnTeleportProjectile, 0.2f);
 	GetWorldTimerManager().SetTimer(TimerHandle_AttackPeriod, this, &ASCharacter::RefreshAttack, FAttackPeriod);
 }
 
@@ -160,35 +163,38 @@ void ASCharacter::SpawnTeleportProjectile()
 	SpawnProjectile(TeleportProjectileClass);
 }
 
-
 void ASCharacter::SpawnProjectile(UClass* Class)
 {
-	// get the line trace from the camera, really long, to detect the possible 
-	float Length = 100000.0f;
-	FVector Start = CameraComponent->GetComponentLocation();
-	FVector End = Start + CameraComponent->GetComponentRotation().Vector() * Length;
-	FCollisionObjectQueryParams ObjectQueryParams;
-	ObjectQueryParams.AddObjectTypesToQuery(ECC_WorldDynamic);
-	ObjectQueryParams.AddObjectTypesToQuery(ECC_WorldStatic);
-	// hit result will be filled in many information
-	FHitResult Hit;
-	GetWorld()->LineTraceSingleByObjectType(Hit, Start, End, ObjectQueryParams);
-	// check whether the line trace hit with an actor, if true, get the hit location, else directly using the line trace
-	AActor* HitActor = Hit.GetActor();
-	FVector HitLocation = HitActor ? Hit.Location : End;
-	FVector HandLocation = GetMesh()->GetSocketLocation("Muzzle_01");
+	if (ensureAlways(Class)) // check if the class is set
+	{
+		// get the line trace from the camera, really long, to detect the possible 
+		float Length = 100000.0f;
+		FVector Start = CameraComponent->GetComponentLocation();
+		FVector End = Start + CameraComponent->GetComponentRotation().Vector() * Length;
+		FCollisionObjectQueryParams ObjectQueryParams;
+		ObjectQueryParams.AddObjectTypesToQuery(ECC_WorldDynamic);
+		ObjectQueryParams.AddObjectTypesToQuery(ECC_WorldStatic);
+		// hit result will be filled in many information
+		FHitResult Hit;
+		GetWorld()->LineTraceSingleByObjectType(Hit, Start, End, ObjectQueryParams);
+		// check whether the line trace hit with an actor, if true, get the hit location, else directly using the line trace
+		AActor* HitActor = Hit.GetActor();
+		FVector HitLocation = HitActor ? Hit.Location : End;
+		FVector HandLocation = GetMesh()->GetSocketLocation("Muzzle_01");
 
-	// spawn position and rotation, to construct the rotation matrix
-	// spawn forward a little
-	FVector SpawnLocation = HandLocation + FQuat(GetMesh()->GetSocketRotation("Muzzle_01")).GetForwardVector() * 20.0f;
-	FRotator SpawnRotation = FRotationMatrix::MakeFromX((HitLocation - HandLocation).GetSafeNormal()).Rotator();
-	FTransform SpawnTM = FTransform(SpawnRotation, SpawnLocation);
-	// specify the spawn rules
-	FActorSpawnParameters SpawnParams;
-	SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
-	SpawnParams.Instigator = this;
-	// spawn
-	GetWorld()->SpawnActor<AActor>(Class, SpawnTM, SpawnParams);
+		// spawn position and rotation, to construct the rotation matrix
+		// spawn forward a little
+		FVector SpawnLocation = HandLocation + FQuat(GetMesh()->GetSocketRotation("Muzzle_01")).GetForwardVector() *
+			20.0f;
+		FRotator SpawnRotation = FRotationMatrix::MakeFromX((HitLocation - HandLocation).GetSafeNormal()).Rotator();
+		FTransform SpawnTM = FTransform(SpawnRotation, SpawnLocation);
+		// specify the spawn rules
+		FActorSpawnParameters SpawnParams;
+		SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
+		SpawnParams.Instigator = this;
+		// spawn
+		GetWorld()->SpawnActor<AActor>(Class, SpawnTM, SpawnParams);
+	}
 }
 
 

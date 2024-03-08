@@ -3,6 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "SAttributeComponent.h"
 #include "SMessageComponent.h"
 #include "Camera/CameraComponent.h"
 #include "GameFramework/Character.h"
@@ -27,6 +28,9 @@ protected: // Sub-Component
 
 	UPROPERTY(VisibleAnywhere)
 	USMessageComponent* MessageComponent;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
+	USAttributeComponent* AttributeComponent;
 
 protected: // Attack Related
 
@@ -55,7 +59,7 @@ protected: // Attack Related
 	void RefreshAttack();
 
 private:
-	FTimerHandle TimerHandle_PrimaryAttack;
+	FTimerHandle TimerHandle_TriggerAttack;
 	FTimerHandle TimerHandle_AttackPeriod;
 
 	bool bCanAttack;
